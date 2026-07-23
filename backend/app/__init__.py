@@ -44,6 +44,9 @@ def create_app():
         exit(
             "CRITICAL ERROR: Application encryption key is not set in the environment."
         )
+    app.config["JWT_COOKIE_SECURE"] = True        # Requires HTTPS
+    app.config["JWT_COOKIE_SAMESITE"] = "None"     # Allows cross-site/cross-origin cookies
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = True   # Enable CSRF protection (recommended)
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config["OPENAPI_SERVERS"] = [

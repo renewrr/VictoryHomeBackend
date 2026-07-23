@@ -23,6 +23,4 @@ def init_jwt_loaders(jwt: JWTManager):
         identity = jwt_payload["sub"]
         token_version = jwt_payload.get("version")
         employee = AuthRepository.get_user_cache_data(int(identity))
-        if not employee or not employee.auth:
-            return True
         return token_version != employee.auth.auth_version

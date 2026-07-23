@@ -7,7 +7,6 @@ from apiflask import Schema, fields
 if TYPE_CHECKING:
     import models_v2 as models
 
-
 class EmployeeData(BaseModel):
     ID: int
     name: str

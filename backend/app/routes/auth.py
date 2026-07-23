@@ -197,7 +197,7 @@ def who_am_i():
     data = flask_jwt_extended.verify_jwt_in_request(optional=True)
     current_user_id = flask_jwt_extended.get_jwt_identity()
     if data is not None and current_user_id is not None:
-        current_user = AuthRepository.get_user_by_id(int(current_user_id))
+        current_user = AuthRepository.get_user_cache_data(int(current_user_id))
         claims = flask_jwt_extended.get_jwt()
         verified: bool = claims.get("is_2fa_verified", False)
         assert isinstance(verified, bool)

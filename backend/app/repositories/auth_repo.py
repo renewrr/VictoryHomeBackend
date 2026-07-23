@@ -2,16 +2,25 @@ from app.database import db_manager
 from app.models import model_views, models_generated as models
 import pyotp
 from cachetools import TTLCache
+from dataclasses import dataclass
+
+
+@dataclass
+class EmployeeCache:
+    ID: int
+    name: str
+    auth_version: int
+    slugs: list[str]
 
 
 class AuthenticationFailedError(Exception):
     pass
 
 
-USERCACHE = TTLCache[int, models.Employee](maxsize=10000, ttl=300)
+USERCACHE = TTLCache[int, EmployeeCache](maxsize=10000, ttl=300)
 
 
-def get_active_user(user_id: int) -> models.Employee:
+def get_active_user(user_id: int) -> EmployeeCache:
     """Fetch from RAM first; hit Supabase only if cache expired."""
     if user_id in USERCACHE:
         return USERCACHE[user_id]
@@ -23,14 +32,28 @@ def get_active_user(user_id: int) -> models.Employee:
         .where(models.Employee.deleted == False)
         .one()
     )
-    USERCACHE[user_id] = user
-    return user
+    auth_v = -1 if not user.auth else user.auth.auth_version
+    perm_slugs = [perm.perm.perm_slug for perm in user.employee_perms]
+    USERCACHE[user_id] = EmployeeCache(
+        ID=user.ID, name=user.name, auth_version=auth_v, slugs=perm_slugs
+    )
+    return USERCACHE[user_id]
 
 
 class AuthRepository:
 
     @staticmethod
     def get_user_by_id(user_id: int) -> models.Employee:
+        user = (
+            db_manager.session.query(models.Employee)
+            .where(models.Employee.ID == user_id)
+            .where(models.Employee.deleted == False)
+            .one()
+        )
+        return user
+
+    @staticmethod
+    def get_user_cache_data(user_id: int) -> EmployeeCache:
         return get_active_user(user_id)
 
     @staticmethod

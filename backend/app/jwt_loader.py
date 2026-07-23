@@ -16,13 +16,13 @@ def init_jwt_loaders(jwt: JWTManager):
     def user_lookup_callback(_jwt_header, jwt_data):
         """Automatically populates `current_user` with active database model."""
         identity = jwt_data["sub"]
-        return AuthRepository.get_user_by_id(int(identity))
+        return AuthRepository.get_user_cache_data(int(identity))
 
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
         identity = jwt_payload["sub"]
         token_version = jwt_payload.get("version")
-        employee = AuthRepository.get_user_by_id(int(identity))
+        employee = AuthRepository.get_user_cache_data(int(identity))
         if not employee or not employee.auth:
             return True
         return token_version != employee.auth.auth_version

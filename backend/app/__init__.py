@@ -9,12 +9,27 @@ from flask import request, current_app
 from app.models.models_generated import Employee
 import time
 import flask
+from flask_cors import CORS
+
 
 jwt = flask_jwt_extended.JWTManager()
 
 
 def create_app():
     app = APIFlask(__name__)
+    # Define allowed origins dynamically based on environment
+    ALLOWED_ORIGINS = [
+        "https://localhost:4200",  # Angular local dev server
+        os.getenv("FRONTEND_URL", "https://your-angular-app.onrender.com")  # Production Render URL
+    ]
+    # Configure CORS globally for all routes under /api/
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        supports_credentials=True
+    )
     app.secret_key = os.environ.get("APPLICATION_ENCRYPTION_KEY")
     if not app.secret_key:
         # Crash the application immediately at startup if the key is missing
@@ -62,6 +77,8 @@ def create_app():
             "openapi.spec",
         ]:
             return
+        if request.method == "OPTIONS":
+            return None  # Let Flask-CORS handle the response
 
         # Find the Python function handling the current request
         view_func = (

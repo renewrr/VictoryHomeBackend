@@ -1,7 +1,6 @@
 from flask_jwt_extended import JWTManager
 from app.database import db_manager
-from app.models.models_generated import Employee
-from app.repositories.auth_repo import AuthRepository
+from app.repositories.auth_repo import AuthRepository, EmployeeCache
 
 
 def init_jwt_loaders(jwt: JWTManager):
@@ -23,5 +22,4 @@ def init_jwt_loaders(jwt: JWTManager):
         identity = jwt_payload["sub"]
         token_version = jwt_payload.get("version")
         employee = AuthRepository.get_user_cache_data(int(identity))
-        print(employee, flush=True)
-        return token_version != employee.auth.auth_version
+        return token_version != employee.auth_version

@@ -7,10 +7,10 @@ from app.repositories.auth_repo import AuthRepository
 from app import schemas
 from app.decorators import (
     public,
-    get_logged_in_user,
     two_factor_required,
     auto_rollback,
     general,
+    get_logged_in_user_cache,
 )
 
 auth_bp = APIBlueprint("auth", __name__, tag="Auth System")
@@ -99,7 +99,7 @@ def login_with_totp(form_data: schemas.LoginWithTotpInput):
 @auth_bp.output(schemas.LogoutResponse)
 @general
 def logout():
-    current_user = get_logged_in_user()
+    current_user = get_logged_in_user_cache()
     AuthRepository.set_user_logout_with_id(current_user.ID)
     response = jsonify({"msg": "logout successful"})
     flask_jwt_extended.unset_jwt_cookies(response)
@@ -112,7 +112,6 @@ def logout():
 @auth_bp.output(schemas.ForcedLogoutResponse)
 @auth_bp.input(schemas.ForcedLogoutRequest, location="json")
 def force_logout(json_data: schemas.ForcedLogoutRequest):
-    current_user = get_logged_in_user()
     AuthRepository.set_user_logout_with_id(json_data.user_id)
     return {"statuts": True}, 200
 
@@ -123,7 +122,8 @@ def force_logout(json_data: schemas.ForcedLogoutRequest):
 @auth_bp.input(schemas.TotpStepUpRequest, location="form")
 @general
 def totp_step_up(form_data: schemas.TotpStepUpRequest):
-    current_user = get_logged_in_user()
+    current_user_id = get_logged_in_user_cache().ID
+    current_user = AuthRepository.get_user_by_id(current_user_id)
     management_privilege = AuthRepository.get_user_permission(
         current_user, "MANAGEMENT"
     )
@@ -178,7 +178,7 @@ def totp_step_up(form_data: schemas.TotpStepUpRequest):
 @general
 @auto_rollback()
 def patch_employee_password(json_data: schemas.PasswordChangeRequest):
-    current_user = get_logged_in_user()
+    current_user = get_logged_in_user_cache()
     if json_data.confirm_password != json_data.new_password:
         abort(422, message="Password does not match")
     status = AuthRepository.set_user_password(
@@ -197,7 +197,7 @@ def who_am_i():
     data = flask_jwt_extended.verify_jwt_in_request(optional=True)
     current_user_id = flask_jwt_extended.get_jwt_identity()
     if data is not None and current_user_id is not None:
-        current_user = AuthRepository.get_user_cache_data(int(current_user_id))
+        current_user = AuthRepository.get_user_by_id(int(current_user_id))
         claims = flask_jwt_extended.get_jwt()
         verified: bool = claims.get("is_2fa_verified", False)
         assert isinstance(verified, bool)
@@ -223,4 +223,5 @@ def who_am_i():
 @auth_bp.output(schemas.EmployeeData)
 @general
 def get_me():
-    return get_logged_in_user()
+    current_user_id = flask_jwt_extended.get_jwt_identity()
+    return AuthRepository.get_user_by_id(int(current_user_id))

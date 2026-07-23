@@ -12,7 +12,7 @@ def init_jwt_loaders(jwt: JWTManager):
         return str(user_obj.ID)
 
     @jwt.user_lookup_loader
-    def user_lookup_callback(_jwt_header, jwt_data):
+    def user_lookup_callback(_jwt_header, jwt_data) -> EmployeeCache:
         """Automatically populates `current_user` with active database model."""
         identity = jwt_data["sub"]
         return AuthRepository.get_user_cache_data(int(identity))

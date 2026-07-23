@@ -4,13 +4,14 @@ from flask_jwt_extended import jwt_required, get_current_user, get_jwt
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError, NoResultFound
 from app.database import db_manager
 import app.models.models_generated as models
-from app.repositories.auth_repo import AuthRepository
+from app.repositories.auth_repo import AuthRepository, EmployeeCache
 
 
-def get_logged_in_user() -> models.Employee:
+def get_logged_in_user_cache() -> EmployeeCache:
     user = get_current_user()
-    assert isinstance(user, models.Employee)
+    assert isinstance(user, EmployeeCache)
     return user
+
 
 
 def privilege_required(required_role: str = "MANAGEMENT"):
@@ -18,8 +19,8 @@ def privilege_required(required_role: str = "MANAGEMENT"):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             
-            current_user = get_logged_in_user()
-            if not AuthRepository.get_user_permission(current_user, required_role):
+            current_user = get_logged_in_user_cache()
+            if not required_role not in current_user.slugs:
                 abort(
                     403,
                     message="No required privilege, contact management for more info.",

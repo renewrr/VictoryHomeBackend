@@ -56,6 +56,7 @@ class AuthRepository:
     def get_user_cache_data(user_id: int) -> EmployeeCache:
         return get_active_user(user_id)
 
+
     @staticmethod
     def get_user_by_credentials(account: str, password: str, totp: str | None):
         auth = (

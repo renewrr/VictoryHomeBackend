@@ -9,7 +9,7 @@ from app.repositories.personnel_repo import PersonnelRepository
 from app.repositories.operations_repo import OperationsRepository
 from app.repositories.service_user_repo import ServiceUserRepository
 from app import schemas
-from app.decorators import get_logged_in_user, public, general, auto_rollback
+from app.decorators import public, general, auto_rollback
 
 handover_bp = APIBlueprint("handover", __name__, tag="Handover System")
 

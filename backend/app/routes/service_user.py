@@ -6,7 +6,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.repositories.service_user_repo import ServiceUserRepository
 from app import schemas
 from app.decorators import (
-    get_logged_in_user,
     general,
     auto_rollback,
     privilege_required,

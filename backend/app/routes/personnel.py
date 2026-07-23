@@ -6,7 +6,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.repositories.personnel_repo import PersonnelRepository
 from app import schemas
 from app.decorators import (
-    get_logged_in_user,
     general,
     auto_rollback,
     privilege_required,
@@ -67,11 +66,11 @@ def setup_totp(json_data: schemas.EmployeeDetails):
 @general
 @auto_rollback()
 def patch_employee_password(json_data: schemas.PasswordChangeRequest):
-    current_user = get_logged_in_user()
+    current_user_id = int(get_jwt_identity())
     if json_data.confirm_password != json_data.new_password:
         abort(422, message="PASSWORD CHANGE FAILED")
     status = PersonnelRepository.patch_password(
-        current_user.ID, json_data.old_password, json_data.new_password
+        current_user_id, json_data.old_password, json_data.new_password
     )
     if not status:
         abort(422, message="PASSWORD CHANGE FAILED")

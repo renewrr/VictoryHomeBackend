@@ -11,7 +11,6 @@ import time
 import flask
 from flask_cors import CORS
 
-
 jwt = flask_jwt_extended.JWTManager()
 
 
@@ -20,15 +19,17 @@ def create_app():
     # Define allowed origins dynamically based on environment
     ALLOWED_ORIGINS = [
         "https://localhost:4200",  # Angular local dev server
-        os.getenv("FRONTEND_URL", "https://your-angular-app.onrender.com")  # Production Render URL
+        os.getenv(
+            "FRONTEND_URL", "https://your-angular-app.onrender.com"
+        ),  # Production Render URL
     ]
     # Configure CORS globally for all routes under /api/
     CORS(
         app,
         resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
         allow_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        supports_credentials=True
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        supports_credentials=True,
     )
     app.secret_key = os.environ.get("APPLICATION_ENCRYPTION_KEY")
     if not app.secret_key:
@@ -44,9 +45,9 @@ def create_app():
         exit(
             "CRITICAL ERROR: Application encryption key is not set in the environment."
         )
-    app.config["JWT_COOKIE_SECURE"] = True        # Requires HTTPS
-    app.config["JWT_COOKIE_SAMESITE"] = "None"     # Allows cross-site/cross-origin cookies
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = True   # Enable CSRF protection (recommended)
+    app.config["JWT_COOKIE_SECURE"] = True  # Requires HTTPS
+    app.config["JWT_COOKIE_SAMESITE"] = "None"  # Allows cross-site/cross-origin cookies
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # Enable CSRF protection (recommended)
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config["OPENAPI_SERVERS"] = [

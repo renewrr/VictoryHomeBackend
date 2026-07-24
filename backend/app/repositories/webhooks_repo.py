@@ -49,8 +49,8 @@ class WebhookRepository:
             shift=shift.name,
             google_form_response_id=response_id,
         )
-        # db_manager.session.add(main_msg)
-        # db_manager.session.commit()
+        db_manager.session.add(main_msg)
+        db_manager.session.commit()
         handle_physcon(answers, main_msg)
 
 
@@ -59,6 +59,11 @@ def handle_physcon(answers: dict[str, str], main_msg: models.HandoverMessage):
         "服務對象身體狀況\n  (Tình trạng sức khỏe và khám bệnh)  ", ""
     )
     print(physcon_str, flush=True)
-    if not physcon_str or '無 Không có gì bất thường' in physcon_str:
+    if not physcon_str or "無 Không có gì bất thường" in physcon_str:
         return
-    pass
+    phys_msg = models.SecondaryMessage(
+        parent_message_id=main_msg.ID, message_type_id=1, message_body=physcon_str
+    )
+    main_msg.secondary_message.append(phys_msg)
+    db_manager.session.add(main_msg)
+    db_manager.session.commit()

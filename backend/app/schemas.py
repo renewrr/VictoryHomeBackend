@@ -5,7 +5,8 @@ from enum import Enum
 from apiflask import Schema, fields
 
 if TYPE_CHECKING:
-    import models_v2 as models
+    import app.models.model_views as models
+
 
 class EmployeeData(BaseModel):
     ID: int

@@ -14,5 +14,5 @@ class WebhookRepository:
 
     @staticmethod
     def post_webhook_message(response_id, timestamp, answers):
-        print(response_id, timestamp, answers)
+        print(response_id, timestamp, answers, flush=True)
         pass

@@ -38,8 +38,6 @@ class ServiceUserRepository:
             .where(models.ServiceUser.deleted == False)
             .options(
                 selectinload(models.ServiceUser.living_space)
-                .noload(models.ServiceUser.service_user_name_localization)
-                .noload(models.ServiceUser.secondary_message_service_user)
             )
             .all()
         )

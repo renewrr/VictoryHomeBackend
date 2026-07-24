@@ -18,6 +18,6 @@ class WebhookRepository:
     ):
         timestamp = datetime.datetime.fromisoformat(timestamp_str)
         employee_name = answers.get("交班者 Người giao ca ")
-        print('Original:'timestamp_str, answers)
-        print('Transformed:',employee_name, timestamp, flush=True)
+        print("Original:", timestamp_str, answers)
+        print("Transformed:", employee_name, timestamp, flush=True)
         pass

@@ -6,7 +6,7 @@ import datetime
 
 
 from sqlalchemy import select, insert, delete, Integer, or_
-from sqlalchemy.orm import with_loader_criteria, selectinload
+from sqlalchemy.orm import with_loader_criteria, selectinload, noload
 
 
 class ServiceUserRepository:
@@ -36,7 +36,11 @@ class ServiceUserRepository:
         return (
             db_manager.session.query(models.ServiceUser)
             .where(models.ServiceUser.deleted == False)
-            .options(selectinload(models.ServiceUser.living_space))
+            .options(
+                selectinload(models.ServiceUser.living_space)
+                .noload(models.ServiceUser.service_user_name_localization)
+                .noload(models.ServiceUser.secondary_message_service_user)
+            )
             .all()
         )
 

@@ -13,6 +13,11 @@ class WebhookRepository:
     pass
 
     @staticmethod
-    def post_webhook_message(response_id, timestamp, answers):
-        print(response_id, timestamp, answers, flush=True)
+    def post_webhook_message(
+        response_id: str, timestamp_str: str, answers: dict[str, str]
+    ):
+        timestamp = datetime.datetime.fromisoformat(timestamp_str)
+        employee_name = answers.get("交班者 Người giao ca ")
+        print('Original:'timestamp_str, answers)
+        print('Transformed:',employee_name, timestamp, flush=True)
         pass

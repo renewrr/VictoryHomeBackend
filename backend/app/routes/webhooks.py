@@ -11,7 +11,7 @@ webhooks_bp = APIBlueprint("webhooks_bp", __name__, tag="Webhooks System")
 def google_forms_webhook():
     payload = request.get_json() or {}
     response_id = payload.get("responseId")
-    timestamp = payload.get("timestamp")
+    timestamp = payload.get("timestamp", "")
     answers = payload.get("answers", {})
 
     if not response_id:

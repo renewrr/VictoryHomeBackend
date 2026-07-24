@@ -6,7 +6,7 @@ import datetime
 
 
 from sqlalchemy import select, insert, delete, Integer, or_
-from sqlalchemy.orm import with_loader_criteria
+from sqlalchemy.orm import with_loader_criteria, selectinload
 
 
 class ServiceUserRepository:
@@ -18,7 +18,6 @@ class ServiceUserRepository:
             .where(models.ServiceUser.deleted == False)
             .all()
         )
-
 
     @staticmethod
     def get_flat_nicknames() -> Sequence[models.ServiceUserNicknames]:
@@ -37,6 +36,7 @@ class ServiceUserRepository:
         return (
             db_manager.session.query(models.ServiceUser)
             .where(models.ServiceUser.deleted == False)
+            .options(selectinload(models.ServiceUser.living_space))
             .all()
         )
 

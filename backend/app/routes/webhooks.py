@@ -11,6 +11,7 @@ def google_forms_webhook():
     # Process the form response (e.g., parse payload, write to SQLAlchemy)
     response_id = data.get("responseId")
     answers = data.get("answers", {})
+    print(response_id, answers, flush=True)
 
     # Example SQLAlchemy record creation
     # submission = FormSubmission(form_response_id=response_id, payload=answers)

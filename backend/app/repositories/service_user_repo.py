@@ -37,9 +37,8 @@ class ServiceUserRepository:
             db_manager.session.query(models.ServiceUser)
             .where(models.ServiceUser.deleted == False)
             .options(
-                selectinload(models.ServiceUser.living_space).selectinload(
-                    models.ServiceUser.service_user_nicknames
-                )
+                selectinload(models.ServiceUser.living_space),
+                selectinload(models.ServiceUser.service_user_nicknames),
             )
             .all()
         )

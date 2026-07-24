@@ -13,12 +13,10 @@ def get_logged_in_user_cache() -> EmployeeCache:
     return user
 
 
-
 def privilege_required(required_role: str = "MANAGEMENT"):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            
             current_user = get_logged_in_user_cache()
             if required_role not in current_user.slugs:
                 abort(

@@ -6,7 +6,7 @@ import datetime
 
 
 from sqlalchemy import select, insert, delete, Integer, or_
-from sqlalchemy.orm import with_loader_criteria
+from sqlalchemy.orm import with_loader_criteria, selectinload
 
 
 class OperationsRepository:
@@ -29,6 +29,9 @@ class OperationsRepository:
     @staticmethod
     def get_all_buildings() -> Sequence[models.Building]:
         stmt = select(models.Building).options(
+            selectinload(models.Building.building_floors)
+            .selectinload(models.BuildingFloors.living_space)
+            .selectinload(models.LivingSpace.service_user),
             with_loader_criteria(models.Building, lambda cls: cls.deleted == False),
             with_loader_criteria(
                 models.BuildingFloors, lambda cls: cls.deleted == False

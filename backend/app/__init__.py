@@ -70,6 +70,7 @@ def create_app():
     @app.before_request
     def enforce_default_security():
         # Ignore static files, schema JSONs, or Swagger docs
+        print(request.endpoint, flush=True)
         if request.endpoint == "google-forms":
             client_secret = request.headers.get("X-Webhook-Secret")
             # Validate the secret using constant-time string comparison (prevents timing attacks)

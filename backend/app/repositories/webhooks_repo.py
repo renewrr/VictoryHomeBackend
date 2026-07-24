@@ -123,7 +123,7 @@ def handle_others(answers: dict[str, str], main_msg: models.HandoverMessage):
         "其他  Khác\n非上述項目，但需要讓大家知道的 \n (Không thuộc các mục trên nhưng cần mọi người biết)  ",
         "",
     ).strip()
-    if not otr_str or otr_str == "無":
+    if not otr_str or "一切平安 Mọi việc bình an, ổn định" in otr_str:
         return
     otr_msg = models.SecondaryMessage(
         parent_message_id=main_msg.ID, message_type_id=6, message_body=otr_str

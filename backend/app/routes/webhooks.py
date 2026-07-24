@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from apiflask import APIBlueprint
 
-webhooks_bp = APIBlueprint("service_user_bp", __name__, tag="Service User System")
+webhooks_bp = APIBlueprint("webhooks_bp", __name__, tag="Webhooks System")
 
 
 @webhooks_bp.route("/google-forms", methods=["POST"])

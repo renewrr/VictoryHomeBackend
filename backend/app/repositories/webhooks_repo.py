@@ -5,7 +5,7 @@ from typing import Tuple, Sequence
 import datetime
 
 
-from sqlalchemy import select, insert, delete, Integer, or_
+from sqlalchemy import select, insert, delete, Integer, or_, text
 from sqlalchemy.orm import with_loader_criteria, selectinload, noload
 
 
@@ -56,6 +56,16 @@ class WebhookRepository:
         handle_equipment(answers, main_msg)
         handle_familial(answers, main_msg)
         handle_others(answers, main_msg)
+        db_manager.session.execute(
+            text(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.main_message_detail_view_simple;"
+            )
+        )
+        db_manager.session.execute(
+            text(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.secondary_message_detail_view_simple;"
+            )
+        )
 
 
 def handle_physcon(answers: dict[str, str], main_msg: models.HandoverMessage):

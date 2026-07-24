@@ -5,11 +5,9 @@ import os
 import flask_jwt_extended
 import datetime
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask import request, current_app
-from app.models.models_generated import Employee
-import time
-import flask
+from flask import request, current_app, jsonify
 from flask_cors import CORS
+import hmac
 
 jwt = flask_jwt_extended.JWTManager()
 
@@ -54,12 +52,8 @@ def create_app():
         {"url": "https://localhost:2540", "description": "API Gateway Server"}
     ]
 
-    # app.config["DATABASE_URI"] = "postgresql+psycopg://admin:vhome@db:5432/MIS"
-    # app.config["DATABASE_URI"] = (
-    #     "postgresql+psycopg://avnadmin:AVNS_Az6DEXcD2tZXsyFv0qX@vhome-test-renewrr-eb3b.k.aivencloud.com:25885/MIS?sslmode=require&sslrootcert=ca.pem"
-    # )
-    app.config["DATABASE_URI"] = (
-        "postgresql+psycopg://postgres.isvgnpjgkmazusknvwyh:UkK4HTlTrXdB9XoX@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
+    app.config["DATABASE_URI"] = os.environ.get(
+        "DATABASE_URI", "https://localhost:2540"
     )
     app.config["SPEC_PROCESSOR_PASS_OBJECT"] = True
     app.wsgi_app = ProxyFix(
@@ -69,10 +63,25 @@ def create_app():
         x_host=1,
         x_port=1,
     )
+    app.config["WEBHOOK_SECRET"] = os.environ.get(
+        "GOOGLE_FORMS_WEBHOOK_SECRET", "your-secure-secret"
+    )
 
     @app.before_request
     def enforce_default_security():
         # Ignore static files, schema JSONs, or Swagger docs
+        if request.endpoint == "google-forms":
+            client_secret = request.headers.get("X-Webhook-Secret")
+            # Validate the secret using constant-time string comparison (prevents timing attacks)
+            if not client_secret or not hmac.compare_digest(
+                client_secret, app.config.get("WEBHOOK_SECRET", "")
+            ):
+                return abort(
+                    401, message="Unauthorized: Invalid or missing webhook secret"
+                )
+
+            # Bypass JWT check for this route
+            return
         if request.endpoint in [
             "specs",
             "swagger_ui",
@@ -139,5 +148,9 @@ def create_app():
     from app.routes.service_user import service_user_bp
 
     app.register_blueprint(service_user_bp, url_prefix="/api/v3/serviceuser")
+
+    from app.routes.webhooks import webhooks_bp
+
+    app.register_blueprint(webhooks_bp, url_prefix="/webhooks")
 
     return app

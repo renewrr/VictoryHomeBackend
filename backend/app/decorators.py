@@ -20,7 +20,7 @@ def privilege_required(required_role: str = "MANAGEMENT"):
         def wrapper(*args, **kwargs):
             
             current_user = get_logged_in_user_cache()
-            if not required_role not in current_user.slugs:
+            if required_role not in current_user.slugs:
                 abort(
                     403,
                     message="No required privilege, contact management for more info.",

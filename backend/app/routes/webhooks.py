@@ -2,6 +2,7 @@ from flask import request, jsonify
 from apiflask import APIBlueprint
 from app.decorators import public
 from app.repositories.webhooks_repo import WebhookRepository
+import time
 
 webhooks_bp = APIBlueprint("webhooks_bp", __name__, tag="Webhooks System")
 
@@ -25,7 +26,13 @@ def google_forms_webhook():
 @public
 def google_forms_webhook_batch():
     payload = request.get_json() or []
-
+    t0 = time.perf_counter()
     WebhookRepository.batch_post_webhook_message(payload)
+    t1 = time.perf_counter()
 
-    return jsonify({"status": "success", "received_rows": len(payload)}), 200
+    return (
+        jsonify(
+            {"status": "success", "received_rows": len(payload), "used_time": t1 - t0}
+        ),
+        200,
+    )

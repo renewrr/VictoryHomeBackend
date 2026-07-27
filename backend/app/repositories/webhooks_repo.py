@@ -58,6 +58,8 @@ class WebhookRepository:
                 shift=shift.name,
                 google_form_response_id=response_id,
             )
+            db_manager.session.add(main_msg)
+            db_manager.session.commit()
         except IntegrityError:
             return False
         handle_physcon(answers, main_msg.ID)

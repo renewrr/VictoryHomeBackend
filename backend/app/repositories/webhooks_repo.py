@@ -7,6 +7,7 @@ import datetime
 
 from sqlalchemy import select, insert, delete, Integer, or_, text
 from sqlalchemy.orm import with_loader_criteria, selectinload, noload
+from sqlalchemy.exc import IntegrityError
 
 
 class WebhookRepository:
@@ -43,14 +44,17 @@ class WebhookRepository:
             .where(models.Shifts.name == shift_str)
             .one()
         )
-        main_msg = models.HandoverMessage(
-            timestamp=timestamp,
-            creator_id=employee.ID,
-            shift=shift.name,
-            google_form_response_id=response_id,
-        )
-        db_manager.session.add(main_msg)
-        db_manager.session.commit()
+        try:
+            main_msg = models.HandoverMessage(
+                timestamp=timestamp,
+                creator_id=employee.ID,
+                shift=shift.name,
+                google_form_response_id=response_id,
+            )
+            db_manager.session.add(main_msg)
+            db_manager.session.commit()
+        except IntegrityError:
+            return False
         handle_physcon(answers, main_msg)
         handle_medical(answers, main_msg)
         handle_behavioral(answers, main_msg)

@@ -134,12 +134,12 @@ class WebhookRepository:
                     "google_form_response_id": response_id,
                 }
             )
-            secondary_messages.append(handle_physcon(answers, pid))
-            secondary_messages.append(handle_medical(answers, pid))
-            secondary_messages.append(handle_behavioral(answers, pid))
-            secondary_messages.append(handle_equipment(answers, pid))
-            secondary_messages.append(handle_familial(answers, pid))
-            secondary_messages.append(handle_others(answers, pid))
+            secondary_messages.append(handle_physcon(answers, pid, False))
+            secondary_messages.append(handle_medical(answers, pid, False))
+            secondary_messages.append(handle_behavioral(answers, pid, False))
+            secondary_messages.append(handle_equipment(answers, pid, False))
+            secondary_messages.append(handle_familial(answers, pid, False))
+            secondary_messages.append(handle_others(answers, pid, False))
         SECOND_BATCH_SIZE = len(secondary_messages)
         seq_name = (
             'personnel."secondary_message_ID_seq"'  # Name of your PostgreSQL sequence

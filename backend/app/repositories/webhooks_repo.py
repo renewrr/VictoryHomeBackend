@@ -5,7 +5,7 @@ from typing import Tuple, Sequence
 import datetime
 
 
-from sqlalchemy import select, insert, delete, Integer, or_, text
+from sqlalchemy import select, insert, delete, Integer, or_, text, func
 from sqlalchemy.orm import with_loader_criteria, selectinload, noload
 from sqlalchemy.exc import IntegrityError
 
@@ -51,8 +51,6 @@ class WebhookRepository:
                 shift=shift.name,
                 google_form_response_id=response_id,
             )
-            db_manager.session.add(main_msg)
-            db_manager.session.commit()
         except IntegrityError:
             return False
         handle_physcon(answers, main_msg)
@@ -61,6 +59,8 @@ class WebhookRepository:
         handle_equipment(answers, main_msg)
         handle_familial(answers, main_msg)
         handle_others(answers, main_msg)
+        db_manager.session.add(main_msg)
+        db_manager.session.commit()
         db_manager.session.execute(
             text(
                 "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.main_message_detail_view_simple;"
@@ -71,6 +71,67 @@ class WebhookRepository:
                 "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.secondary_message_detail_view_simple;"
             )
         )
+
+    @staticmethod
+    def batch_post_webhook_message(batch: list[tuple[str, str, dict[str, str]]]):
+        BATCH_SIZE = len(batch)
+        seq_name = "buildings_id_seq"  # Name of your PostgreSQL sequence
+        stmt = select(func.nextval(seq_name)).select_from(
+            func.generate_series(1, BATCH_SIZE)
+        )
+        parent_ids = db_manager.session.scalars(stmt).all()
+        print(parent_ids, flush=True)
+        # day_shift_name = (
+        #     db_manager.session.query(models.Shifts)
+        #     .where(models.Shifts.name == "day")
+        #     .one()
+        # ).name
+        # evening_shift_name = (
+        #     db_manager.session.query(models.Shifts)
+        #     .where(models.Shifts.name == "evening")
+        #     .one()
+        # ).name
+        # night_shift_name = (
+        #     db_manager.session.query(models.Shifts)
+        #     .where(models.Shifts.name == "night")
+        #     .one()
+        # ).name
+        # for response_id, timestamp_str, answers in batch:
+        #     timestamp = datetime.datetime.fromisoformat(timestamp_str)
+        #     employee_name = answers.get("交班者 Người giao ca ", "").strip("")
+        #     if not employee_name:
+        #         continue
+        #     try:
+        #         employee = (
+        #             db_manager.session.query(models.Employee)
+        #             .where(models.Employee.name == employee_name)
+        #             .one()
+        #         )
+        #     except:
+        #         employee = models.Employee(name=employee_name)
+        #         db_manager.session.add(employee)
+        #         db_manager.session.commit()
+        #     shift_str = answers.get("班別 Ca làm việc ", "").strip()
+        #     shift = day_shift_name
+        #     if "白班" in shift_str:
+        #         shift = day_shift_name
+        #     elif "小夜班" in shift_str:
+        #         shift = evening_shift_name
+        #     elif "大夜班" in shift_str:
+        #         shift = night_shift_name
+        #     main_msg = {"ID":}
+        #     main_msg = models.HandoverMessage(
+        #         timestamp=timestamp,
+        #         creator_id=employee.ID,
+        #         shift=shift.name,
+        #         google_form_response_id=response_id,
+        #     )
+        #     handle_physcon(answers, main_msg)
+        #     handle_medical(answers, main_msg)
+        #     handle_behavioral(answers, main_msg)
+        #     handle_equipment(answers, main_msg)
+        #     handle_familial(answers, main_msg)
+        #     handle_others(answers, main_msg)
 
 
 def handle_physcon(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -83,8 +144,6 @@ def handle_physcon(answers: dict[str, str], main_msg: models.HandoverMessage):
         parent_message_id=main_msg.ID, message_type_id=1, message_body=physcon_str
     )
     main_msg.secondary_message.append(phys_msg)
-    db_manager.session.add(phys_msg)
-    db_manager.session.commit()
 
 
 def handle_behavioral(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -97,8 +156,6 @@ def handle_behavioral(answers: dict[str, str], main_msg: models.HandoverMessage)
         parent_message_id=main_msg.ID, message_type_id=3, message_body=beh_str
     )
     main_msg.secondary_message.append(beh_msg)
-    db_manager.session.add(beh_msg)
-    db_manager.session.commit()
 
 
 def handle_equipment(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -112,8 +169,6 @@ def handle_equipment(answers: dict[str, str], main_msg: models.HandoverMessage):
         parent_message_id=main_msg.ID, message_type_id=4, message_body=eq_str
     )
     main_msg.secondary_message.append(eq_msg)
-    db_manager.session.add(eq_msg)
-    db_manager.session.commit()
 
 
 def handle_familial(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -127,8 +182,6 @@ def handle_familial(answers: dict[str, str], main_msg: models.HandoverMessage):
         parent_message_id=main_msg.ID, message_type_id=5, message_body=fam_str
     )
     main_msg.secondary_message.append(fam_msg)
-    db_manager.session.add(fam_msg)
-    db_manager.session.commit()
 
 
 def handle_others(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -142,8 +195,6 @@ def handle_others(answers: dict[str, str], main_msg: models.HandoverMessage):
         parent_message_id=main_msg.ID, message_type_id=6, message_body=otr_str
     )
     main_msg.secondary_message.append(otr_msg)
-    db_manager.session.add(otr_msg)
-    db_manager.session.commit()
 
 
 def handle_medical(answers: dict[str, str], main_msg: models.HandoverMessage):
@@ -158,5 +209,3 @@ def handle_medical(answers: dict[str, str], main_msg: models.HandoverMessage):
         parent_message_id=main_msg.ID, message_type_id=2, message_body=msg_str
     )
     main_msg.secondary_message.append(med_msg)
-    db_manager.session.add(med_msg)
-    db_manager.session.commit()

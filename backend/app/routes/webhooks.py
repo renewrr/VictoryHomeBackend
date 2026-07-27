@@ -19,3 +19,13 @@ def google_forms_webhook():
     WebhookRepository.post_webhook_message(response_id, timestamp, answers)
 
     return jsonify({"status": "success", "received_id": response_id}), 200
+
+
+@webhooks_bp.route("/google-forms-batch", methods=["POST"])
+@public
+def google_forms_webhook_batch():
+    payload = request.get_json() or []
+
+    WebhookRepository.batch_post_webhook_message(payload)
+
+    return jsonify({"status": "success", "received_rows": len(payload)}), 200

@@ -19,6 +19,8 @@ class DatabaseManager:
             pool_size=10,
             max_overflow=20,
             pool_recycle=3600,
+            executemany_mode="values",
+            executemany_batch_page_size=1000,
         )
         self.session_factory = sessionmaker(bind=self.engine)
 

@@ -136,7 +136,7 @@ def totp_step_up(form_data: schemas.TotpStepUpRequest):
             additional_claims={
                 "is_2fa_verified": two_factor_step_up,
                 "version": current_user.auth.auth_version,
-                "mangement_privilege": management_privilege,
+                "management_privilege": management_privilege,
             },
         )
         response = jsonify(
@@ -155,7 +155,7 @@ def totp_step_up(form_data: schemas.TotpStepUpRequest):
             additional_claims={
                 "is_2fa_verified": False,
                 "version": -1,
-                "mangement_privilege": management_privilege,
+                "management_privilege": management_privilege,
             },
         )
         response = jsonify(

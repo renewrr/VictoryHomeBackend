@@ -75,7 +75,9 @@ class WebhookRepository:
     @staticmethod
     def batch_post_webhook_message(batch: list[tuple[str, str, dict[str, str]]]):
         BATCH_SIZE = len(batch)
-        seq_name = "buildings_id_seq"  # Name of your PostgreSQL sequence
+        seq_name = (
+            'personnel."handover_message_ID_seq"'  # Name of your PostgreSQL sequence
+        )
         stmt = select(func.nextval(seq_name)).select_from(
             func.generate_series(1, BATCH_SIZE)
         )

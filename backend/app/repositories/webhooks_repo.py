@@ -162,9 +162,10 @@ class WebhookRepository:
             sm = handle_medical(answers, pid, False)
             if sm:
                 secondary_messages.append(sm)
-            ml = handle_location(answers, pid, False)
-            if ml:
-                message_locations.append(ml)
+            mls = handle_location(answers, pid, False)
+            if mls:
+                for ml in mls:
+                    message_locations.append(ml)
         SECOND_BATCH_SIZE = len(secondary_messages)
         seq_name = (
             'personnel."secondary_message_ID_seq"'  # Name of your PostgreSQL sequence

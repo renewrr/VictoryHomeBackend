@@ -73,7 +73,7 @@ class WebhookRepository:
         )
 
     @staticmethod
-    def batch_post_webhook_message(batch: list[tuple[str, str, dict[str, str]]]):
+    def batch_post_webhook_message(batch):
         BATCH_SIZE = len(batch)
         seq_name = (
             'personnel."handover_message_ID_seq"'  # Name of your PostgreSQL sequence
@@ -82,8 +82,6 @@ class WebhookRepository:
             func.generate_series(1, BATCH_SIZE)
         )
         parent_ids = db_manager.session.scalars(stmt).all()
-        print(batch, parent_ids, flush=True)
-        return True
         day_shift_name = (
             db_manager.session.query(models.Shifts)
             .where(models.Shifts.name == "day")
@@ -104,7 +102,10 @@ class WebhookRepository:
             employees[emp_data.name] = emp_data
         handover_messages = []
         secondary_messages = []
-        for pid, (response_id, timestamp_str, answers) in zip(parent_ids, batch):
+        for pid, payload in zip(parent_ids, batch):
+            response_id: str = payload.get("responseId")
+            timestamp_str: str = payload.get("timestamp", "")
+            answers: dict[str, str] = payload.get("answers", {})
             timestamp = datetime.datetime.fromisoformat(timestamp_str)
             employee_name = answers.get("交班者 Người giao ca ", "").strip("")
             if not employee_name:

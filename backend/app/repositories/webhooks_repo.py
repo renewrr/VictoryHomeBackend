@@ -171,7 +171,11 @@ def handle_physcon(answers: dict[str, str], main_msg_id: int, direct_orm: bool =
     physcon_str = answers.get(
         "服務對象身體狀況\n  (Tình trạng sức khỏe và khám bệnh)  ", ""
     )
-    if not physcon_str:
+    if (
+        not physcon_str
+        or physcon_str == "無 Không có gì bất thường"
+        or physcon_str == "無"
+    ):
         return
     if direct_orm:
         phys_msg = models.SecondaryMessage(
@@ -192,7 +196,7 @@ def handle_behavioral(
     beh_str = answers.get(
         "服務使用者行為問題\n  Vấn đề hành vi của người sử dụng dịch vụ  ", ""
     ).strip()
-    if not beh_str:
+    if not beh_str or beh_str == "無 Không có gì bất thường" or beh_str == "無":
         return
     if direct_orm:
         beh_msg = models.SecondaryMessage(
@@ -214,7 +218,7 @@ def handle_equipment(
         '設施設備  Cơ sở vật chất, thiết bị \n若有損壞，請在其他項目填寫物品，並註記是否有填維修單  Nếu có hư hỏng, vui lòng ghi rõ vật phẩm vào mục "Khác" và chú thích đã điền đơn sửa chữa chưa ',
         "",
     ).strip()
-    if not eq_str:
+    if not eq_str or eq_str == "無 Không có gì bất thường" or eq_str == "無":
         return
     if direct_orm:
         eq_msg = models.SecondaryMessage(
@@ -234,7 +238,7 @@ def handle_familial(answers: dict[str, str], main_msg_id: int, direct_orm: bool 
         "家屬交辦事項  Nội dung gia đình bàn giao ",
         "",
     ).strip()
-    if not fam_str:
+    if not fam_str or fam_str == "無":
         return
     if direct_orm:
         fam_msg = models.SecondaryMessage(

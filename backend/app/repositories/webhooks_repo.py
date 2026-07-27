@@ -82,6 +82,8 @@ class WebhookRepository:
             func.generate_series(1, BATCH_SIZE)
         )
         parent_ids = db_manager.session.scalars(stmt).all()
+        print(batch, parent_ids, flush=True)
+        return True
         day_shift_name = (
             db_manager.session.query(models.Shifts)
             .where(models.Shifts.name == "day")

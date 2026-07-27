@@ -116,7 +116,7 @@ def create_app():
         except Exception as e:
             abort(401, message="Authentication token missing or invalid.")
         claims = flask_jwt_extended.get_jwt()
-        perm = claims.get("mangement_privilege", False)
+        perm = claims.get("management_privilege", False)
         twofactor = claims.get("is_2fa_verified", False)
 
         # 3. Determine required role: Check for custom tag, otherwise DEFAULT TO ADMIN

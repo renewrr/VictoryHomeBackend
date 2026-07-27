@@ -71,7 +71,10 @@ def create_app():
     def enforce_default_security():
         # Ignore static files, schema JSONs, or Swagger docs
         print(request.endpoint, flush=True)
-        if request.endpoint == "webhooks_bp.google_forms_webhook":
+        if (
+            request.endpoint == "webhooks_bp.google_forms_webhook"
+            or request.endpoint == "webhooks_bp.google_forms_webhook_batch"
+        ):
             client_secret = request.headers.get("X-Webhook-Secret")
             # Validate the secret using constant-time string comparison (prevents timing attacks)
             if not client_secret or not hmac.compare_digest(

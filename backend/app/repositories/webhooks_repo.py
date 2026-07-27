@@ -103,9 +103,7 @@ def handle_behavioral(answers: dict[str, str], main_msg: models.HandoverMessage)
 
 def handle_equipment(answers: dict[str, str], main_msg: models.HandoverMessage):
     eq_str = answers.get(
-        "設施設備  Cơ sở vật chất, thiết bị \n若有損壞，請在其他項目填寫物品，並註記是否有填維修單  Nếu có hư hỏng, vui lòng ghi rõ vật phẩm vào mục "
-        "Khác"
-        " và chú thích đã điền đơn sửa chữa chưa ",
+        '設施設備  Cơ sở vật chất, thiết bị \n若有損壞，請在其他項目填寫物品，並註記是否有填維修單  Nếu có hư hỏng, vui lòng ghi rõ vật phẩm vào mục "Khác" và chú thích đã điền đơn sửa chữa chưa ',
         "",
     ).strip()
     if not eq_str or "無 Không có gì bất thường" in eq_str:

@@ -85,7 +85,7 @@ def handle_physcon(answers: dict[str, str], main_msg: models.HandoverMessage):
 
 def handle_behavioral(answers: dict[str, str], main_msg: models.HandoverMessage):
     beh_str = answers.get(
-        "服務使用者行為問題\nVấn đề hành vi của người sử dụng dịch vụ  ", ""
+        "服務使用者行為問題\n  Vấn đề hành vi của người sử dụng dịch vụ  ", ""
     ).strip()
     if not beh_str or "無 Không có gì bất thường" in beh_str:
         return

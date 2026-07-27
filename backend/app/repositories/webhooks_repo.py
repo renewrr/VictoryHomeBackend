@@ -71,6 +71,7 @@ class WebhookRepository:
                 "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.secondary_message_detail_view_simple;"
             )
         )
+        db_manager.session.commit()
 
     @staticmethod
     def batch_post_webhook_message(batch):
@@ -164,6 +165,17 @@ class WebhookRepository:
             sm["ID"] = sid
         db_manager.session.execute(insert(models.HandoverMessage), handover_messages)
         db_manager.session.execute(insert(models.SecondaryMessage), secondary_messages)
+        db_manager.session.commit()
+        db_manager.session.execute(
+            text(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.main_message_detail_view_simple;"
+            )
+        )
+        db_manager.session.execute(
+            text(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.secondary_message_detail_view_simple;"
+            )
+        )
         db_manager.session.commit()
 
 

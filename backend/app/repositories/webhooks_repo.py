@@ -52,6 +52,7 @@ class WebhookRepository:
         db_manager.session.add(main_msg)
         db_manager.session.commit()
         handle_physcon(answers, main_msg)
+        handle_medical(answers, main_msg)
         handle_behavioral(answers, main_msg)
         handle_equipment(answers, main_msg)
         handle_familial(answers, main_msg)
@@ -140,4 +141,20 @@ def handle_others(answers: dict[str, str], main_msg: models.HandoverMessage):
     )
     main_msg.secondary_message.append(otr_msg)
     db_manager.session.add(otr_msg)
+    db_manager.session.commit()
+
+
+def handle_medical(answers: dict[str, str], main_msg: models.HandoverMessage):
+    su_str = answers.get("就醫者 Người đi khám bệnh ", "").strip()
+    if not su_str:
+        return
+    reason_str = answers.get("送醫原因 Lý do đưa đi viện ", "").strip()
+    hospital_str = answers.get("就醫醫院  Bệnh viện khám bệnh ", "").strip()
+    emp_str = answers.get("陪同就醫者  Người đi cùng đến viện ", "").strip()
+    msg_str = f"就醫者: {su_str}, 送醫原因: {reason_str}, 就醫醫院: {hospital_str}, 陪同就醫者: {emp_str}"
+    med_msg = models.SecondaryMessage(
+        parent_message_id=main_msg.ID, message_type_id=2, message_body=msg_str
+    )
+    main_msg.secondary_message.append(med_msg)
+    db_manager.session.add(med_msg)
     db_manager.session.commit()

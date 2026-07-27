@@ -9,6 +9,13 @@ from sqlalchemy import select, insert, delete, Integer, or_, text, func
 from sqlalchemy.orm import with_loader_criteria, selectinload, noload
 from sqlalchemy.exc import IntegrityError
 
+FLOOR_STR: dict[str, list[str]] = {
+    "Third floor": ["三", "3"],
+    "Fourth floor": ["四", "4"],
+    "Fifth floor": ["五", "5"],
+    "Sixth floor": ["六", "6"],
+}
+
 
 class WebhookRepository:
 
@@ -59,6 +66,7 @@ class WebhookRepository:
         handle_equipment(answers, main_msg.ID)
         handle_familial(answers, main_msg.ID)
         handle_others(answers, main_msg.ID)
+        handle_location(answers, main_msg.ID)
         db_manager.session.add(main_msg)
         db_manager.session.commit()
         db_manager.session.execute(
@@ -103,6 +111,7 @@ class WebhookRepository:
             employees[emp_data.name] = emp_data
         handover_messages = []
         secondary_messages = []
+        message_locations = []
         for pid, payload in zip(parent_ids, batch):
             response_id: str = payload.get("responseId")
             timestamp_str: str = payload.get("timestamp", "")
@@ -153,6 +162,9 @@ class WebhookRepository:
             sm = handle_medical(answers, pid, False)
             if sm:
                 secondary_messages.append(sm)
+            ml = handle_location(answers, pid, False)
+            if ml:
+                message_locations.append(ml)
         SECOND_BATCH_SIZE = len(secondary_messages)
         seq_name = (
             'personnel."secondary_message_ID_seq"'  # Name of your PostgreSQL sequence
@@ -163,8 +175,20 @@ class WebhookRepository:
         second_ids = db_manager.session.scalars(stmt).all()
         for sid, sm in zip(second_ids, secondary_messages):
             sm["ID"] = sid
+
+        ML_BATCH_SIZE = len(message_locations)
+        seq_name = (
+            'personnel."message_location_ID_seq"'  # Name of your PostgreSQL sequence
+        )
+        stmt = select(func.nextval(seq_name)).select_from(
+            func.generate_series(1, ML_BATCH_SIZE)
+        )
+        ml_ids = db_manager.session.scalars(stmt).all()
+        for mlid, ml in zip(ml_ids, message_locations):
+            ml["ID"] = mlid
         db_manager.session.execute(insert(models.HandoverMessage), handover_messages)
         db_manager.session.execute(insert(models.SecondaryMessage), secondary_messages)
+        db_manager.session.execute(insert(models.MessageLocation), message_locations)
         db_manager.session.commit()
         db_manager.session.execute(
             text(
@@ -304,3 +328,29 @@ def handle_medical(answers: dict[str, str], main_msg_id: int, direct_orm: bool =
         "message_type_id": 2,
         "message_body": msg_str,
     }
+
+
+def handle_location(answers: dict[str, str], main_msg_id: int, direct_orm: bool = True):
+    floor_str = answers.get(
+        '樓層\n若非在宿舍區發生的狀況，請直接勾選其他寫地點\n  Nếu tình huống không xảy ra tại khu ký túc xá, vui lòng chọn "Khác" và ghi rõ địa điểm  ',
+        "",
+    ).strip()
+    floor_msgs: list[str] = []
+    for floor, poss_strs in FLOOR_STR.items():
+        for ps in poss_strs:
+            if ps in floor_str:
+                floor_msgs.append(floor)
+                break
+    if not floor_msgs:
+        floor_msgs.append("Other")
+    if direct_orm:
+        for floor_msg in floor_msgs:
+            floor_msg_obj = models.MessageLocation(
+                parent_message_id=main_msg_id, location_name=floor_msg
+            )
+            db_manager.session.add(floor_msg_obj)
+            db_manager.session.commit()
+    return [
+        {"parent_message_id": main_msg_id, "location_name": floor_msg}
+        for floor_msg in floor_msgs
+    ]

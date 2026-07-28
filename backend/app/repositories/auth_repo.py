@@ -93,6 +93,7 @@ class AuthRepository:
         )
         if user.auth:
             user.auth.auth_version += 1
+        remove_user_cache(user.ID)
         db_manager.session.commit()
 
     @staticmethod

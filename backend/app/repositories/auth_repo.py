@@ -41,7 +41,10 @@ def get_active_user(user_id: int) -> EmployeeCache:
 
 
 def remove_user_cache(user_id: int):
-    print(f"Flushing cache for {user_id}, in cache? {user_id in USERCACHE}", flush=True)
+    print(
+        f"Flushing cache for {user_id}, in cache? {user_id in USERCACHE}, {USERCACHE}",
+        flush=True,
+    )
     if user_id in USERCACHE:
         USERCACHE.pop(user_id)
 

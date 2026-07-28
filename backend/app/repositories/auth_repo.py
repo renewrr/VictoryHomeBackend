@@ -40,6 +40,11 @@ def get_active_user(user_id: int) -> EmployeeCache:
     return USERCACHE[user_id]
 
 
+def remove_user_cache(user_id: int):
+    if user_id in USERCACHE:
+        USERCACHE.pop(user_id)
+
+
 class AuthRepository:
 
     @staticmethod
@@ -55,7 +60,6 @@ class AuthRepository:
     @staticmethod
     def get_user_cache_data(user_id: int) -> EmployeeCache:
         return get_active_user(user_id)
-
 
     @staticmethod
     def get_user_by_credentials(account: str, password: str, totp: str | None):

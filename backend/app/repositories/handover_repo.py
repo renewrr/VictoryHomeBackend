@@ -14,7 +14,9 @@ class HandoverRepository:
     def get_filtered_secondary_message(
         message_filter: schemas.HandoverMessageFilter,
     ) -> Tuple[Sequence[model_views.MatSecondaryDetailViewSimple], int]:
-        stmt = db_manager.session.query(model_views.MatSecondaryDetailViewSimple)
+        stmt = db_manager.session.query(
+            model_views.MatSecondaryDetailViewSimple
+        ).filter(model_views.MatSecondaryDetailViewSimple.is_default == False)
         start_date, end_date = message_filter.get(
             "start_date", datetime.datetime.now() - datetime.timedelta(days=1)
         ), message_filter.get("end_date", datetime.datetime.now())

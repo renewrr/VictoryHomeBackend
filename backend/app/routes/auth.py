@@ -68,7 +68,7 @@ def login_with_totp(form_data: schemas.LoginWithTotpInput):
         access_token = flask_jwt_extended.create_access_token(
             identity=user,
             additional_claims={
-                "is_2fa_verified": False,
+                "is_2fa_verified": True,
                 "version": user.auth.auth_version,
                 "management_privilege": management_privilege,
             },

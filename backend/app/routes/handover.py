@@ -2,7 +2,7 @@ import flask_jwt_extended
 import time
 
 from flask import jsonify
-from apiflask import APIBlueprint
+from apiflask import APIBlueprint, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_current_user
 from app.repositories.handover_repo import HandoverRepository
 from app.repositories.personnel_repo import PersonnelRepository
@@ -93,11 +93,14 @@ def get_filter_options(filter_option: schemas.FilterQuery):
 
 @handover_bp.patch("/secondary_message")
 @flask_jwt_extended.jwt_required()
+@handover_bp.output(schemas.SecondaryEditResponse)
 @handover_bp.input(schemas.SecondaryEditRequest, location="json")
 @auto_rollback()
 @general
 def patch_secondary_message(json_data: schemas.SecondaryEditRequest):
-    status = HandoverRepository.patch_secondary_message(
+    status, secondary = HandoverRepository.patch_secondary_message(
         json_data.before, json_data.after, user=get_current_user()
     )
-    return {}, 200
+    if secondary is None:
+        abort(410, message=status)
+    return {"msg": secondary, "status": status}, 200

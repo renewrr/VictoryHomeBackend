@@ -466,14 +466,21 @@ class RoomDeleteRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     room_id: int
 
+
 class SecondaryMessageDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     ID: int
     message_body: str
     delete: bool
 
+
 class SecondaryEditRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     before: SecondaryMessageDetail
     after: SecondaryMessageDetail
 
+
+class SecondaryEditResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    msg: SecondaryMessageDetail
+    status: str

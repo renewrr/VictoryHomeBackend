@@ -260,19 +260,20 @@ class HandoverRepository:
         after: schemas.SecondaryMessageDetail,
         user: EmployeeCache,
     ):
-        original_view = (
-            db_manager.session.query(model_views.SecondaryMessageDetailView)
-            .where(model_views.SecondaryMessageDetailView.ID == before.ID)
-            .one()
-        )
-        if "MANAGEMENT" not in user.slugs and original_view.creator_id != user.ID:
-            return False
-        original = (
-            db_manager.session.query(models.SecondaryMessage)
-            .where(models.SecondaryMessage.ID == before.ID)
-            .one()
-        )
+        try:
+            original = (
+                db_manager.session.query(models.SecondaryMessage)
+                .where(models.SecondaryMessage.ID == before.ID)
+                .one()
+            )
+        except:
+            return "No object found", None
+        if (
+            "MANAGEMENT" not in user.slugs
+            and original.parent_message.creator_id != user.ID
+        ):
+            return "No privilege and User mismatch.", original
         original.message_body = after.message_body
         original.is_deleted = after.delete
         db_manager.session.commit()
-        return True
+        return "Success", original

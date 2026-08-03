@@ -471,7 +471,7 @@ class SecondaryMessageDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     ID: int
     message_body: str
-    delete: bool
+    is_deleted: bool
 
 
 class SecondaryEditRequest(BaseModel):

@@ -274,6 +274,6 @@ class HandoverRepository:
         ):
             return "No privilege and User mismatch.", original
         original.message_body = after.message_body
-        original.is_deleted = after.delete
+        original.is_deleted = after.is_deleted
         db_manager.session.commit()
         return "Success", original

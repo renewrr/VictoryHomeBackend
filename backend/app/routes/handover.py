@@ -97,6 +97,7 @@ def get_filter_options(filter_option: schemas.FilterQuery):
 @auto_rollback()
 @general
 def patch_secondary_message(json_data: schemas.SecondaryEditRequest):
-    HandoverRepository.patch_secondary_message(
+    status = HandoverRepository.patch_secondary_message(
         json_data.before, json_data.after, user=get_current_user()
     )
+    return {}, 200

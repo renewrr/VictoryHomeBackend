@@ -1,6 +1,6 @@
 from flask_jwt_extended import JWTManager, unset_jwt_cookies
 from app.database import db_manager
-from app.repositories.auth_repo import AuthRepository, EmployeeCache
+from app.repositories.auth_repo import AuthRepository, EmployeeCache, invalidate_cache
 from flask import jsonify
 
 
@@ -23,7 +23,12 @@ def init_jwt_loaders(jwt: JWTManager):
         identity = jwt_payload["sub"]
         token_version = jwt_payload.get("version")
         employee = AuthRepository.get_user_cache_data(int(identity))
-        print(f'Token version: sent:{token_version}, db:{employee.auth_version}', flush=True)
+        if token_version > employee.auth_version:
+            invalidate_cache(int(identity))
+        print(
+            f"Token version: sent:{token_version}, db:{employee.auth_version}",
+            flush=True,
+        )
         return token_version != employee.auth_version
 
     @jwt.expired_token_loader

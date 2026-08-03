@@ -20,6 +20,11 @@ class AuthenticationFailedError(Exception):
 USERCACHE = TTLCache[int, EmployeeCache](maxsize=10000, ttl=300)
 
 
+def invalidate_cache(user_id: int):
+    if user_id in USERCACHE:
+        USERCACHE.pop(user_id)
+
+
 def get_active_user(user_id: int) -> EmployeeCache:
     """Fetch from RAM first; hit Supabase only if cache expired."""
     if user_id in USERCACHE:
@@ -33,7 +38,10 @@ def get_active_user(user_id: int) -> EmployeeCache:
         .where(models.Employee.deleted == False)
         .one()
     )
-    print(f"User auth version fetched: {user.auth.auth_version if user.auth else -1}", flush=True)
+    print(
+        f"User auth version fetched: {user.auth.auth_version if user.auth else -1}",
+        flush=True,
+    )
     auth_v = -1 if not user.auth else user.auth.auth_version
     perm_slugs = [perm.perm.perm_slug for perm in user.employee_perms]
     USERCACHE[user_id] = EmployeeCache(
@@ -90,6 +98,8 @@ class AuthRepository:
         )
         if user.auth:
             user.auth.auth_version += 1
+        if user.ID in USERCACHE:
+            USERCACHE.pop(user.ID)
         db_manager.session.commit()
         db_manager.session.remove()
 

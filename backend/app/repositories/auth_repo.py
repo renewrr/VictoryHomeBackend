@@ -26,7 +26,7 @@ def get_active_user(user_id: int) -> EmployeeCache:
         return USERCACHE[user_id]
 
     # Cache miss: fetch from DB
-    db_manager.session.expire_all()
+    db_manager.session.remove()
     user = (
         db_manager.session.query(models.Employee)
         .where(models.Employee.ID == user_id)

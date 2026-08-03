@@ -1,6 +1,7 @@
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, unset_jwt_cookies
 from app.database import db_manager
 from app.repositories.auth_repo import AuthRepository, EmployeeCache
+from flask import jsonify
 
 
 def init_jwt_loaders(jwt: JWTManager):
@@ -23,3 +24,13 @@ def init_jwt_loaders(jwt: JWTManager):
         token_version = jwt_payload.get("version")
         employee = AuthRepository.get_user_cache_data(int(identity))
         return token_version != employee.auth_version
+
+    @jwt.expired_token_loader
+    def my_expired_token_callback(jwt_header, jwt_payload):
+        # 1. Create a custom error response
+        response = jsonify({"status": 401, "msg": "The token has expired"})
+
+        # 2. Clear the JWT cookies from the response header
+        unset_jwt_cookies(response)
+
+        return response, 401

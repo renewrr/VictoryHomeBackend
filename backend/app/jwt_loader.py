@@ -25,6 +25,7 @@ def init_jwt_loaders(jwt: JWTManager):
         employee = AuthRepository.get_user_cache_data(int(identity))
         if token_version > employee.auth_version:
             invalidate_cache(int(identity))
+        employee = AuthRepository.get_user_cache_data(int(identity))
         print(
             f"Token version: sent:{token_version}, db:{employee.auth_version}",
             flush=True,

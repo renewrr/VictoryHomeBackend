@@ -275,6 +275,7 @@ class HandoverRepository:
             return "No privilege and User mismatch.", original
         original.message_body = after.message_body
         original.is_deleted = after.is_deleted
+        db_manager.session.flush()
         db_manager.session.execute(
             text(
                 "REFRESH MATERIALIZED VIEW CONCURRENTLY personnel.secondary_message_detail_view_simple;"

@@ -1,5 +1,6 @@
 from app.database import db_manager
 from app.models import model_views, models_generated as models
+from app.repositories.auth_repo import EmployeeCache
 from app import schemas
 from typing import Tuple, Sequence
 import datetime
@@ -252,3 +253,26 @@ class HandoverRepository:
         )
         out = db_manager.session.execute(stmt).tuples().all()
         return [o for _, o in out]
+
+    @staticmethod
+    def patch_secondary_message(
+        before: schemas.SecondaryMessageDetail,
+        after: schemas.SecondaryMessageDetail,
+        user: EmployeeCache,
+    ):
+        original_view = (
+            db_manager.session.query(model_views.SecondaryMessageDetailView)
+            .where(model_views.SecondaryMessageDetailView.ID == before.ID)
+            .one()
+        )
+        if "MANAGEMENT" not in user.slugs and original_view.creator_id != user.ID:
+            return False
+        original = (
+            db_manager.session.query(models.SecondaryMessage)
+            .where(models.SecondaryMessage.ID == before.ID)
+            .one()
+        )
+        original.message_body = after.message_body
+        original.is_deleted = after.delete
+        db_manager.session.commit()
+        return True

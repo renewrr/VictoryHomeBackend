@@ -89,3 +89,14 @@ def get_filter_options(filter_option: schemas.FilterQuery):
         for r in HandoverRepository.get_message_types():
             rows.append({"ID": r.ID, "name": r.message_type})
         return {"data_rows": rows}
+
+
+@handover_bp.patch("/secondary_message")
+@flask_jwt_extended.jwt_required()
+@handover_bp.input(schemas.SecondaryEditRequest, location="json")
+@auto_rollback()
+@general
+def patch_secondary_message(json_data: schemas.SecondaryEditRequest):
+    HandoverRepository.patch_secondary_message(
+        json_data.before, json_data.after, user=get_current_user()
+    )

@@ -926,6 +926,9 @@ class SecondaryMessage(Base):
     parent_message_id: Mapped[int] = mapped_column(Integer, nullable=False)
     message_type_id: Mapped[int] = mapped_column(Integer, nullable=False)
     message_body: Mapped[Optional[str]] = mapped_column(String(500))
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
 
     message_type: Mapped["SecondaryMessageTypes"] = relationship(
         "SecondaryMessageTypes", back_populates="secondary_message"

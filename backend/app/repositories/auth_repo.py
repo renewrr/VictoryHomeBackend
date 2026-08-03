@@ -26,6 +26,7 @@ def get_active_user(user_id: int) -> EmployeeCache:
         return USERCACHE[user_id]
 
     # Cache miss: fetch from DB
+    db_manager.session.expire_all()
     user = (
         db_manager.session.query(models.Employee)
         .where(models.Employee.ID == user_id)
@@ -90,6 +91,7 @@ class AuthRepository:
         if user.auth:
             user.auth.auth_version += 1
         db_manager.session.commit()
+        db_manager.session.remove()
 
     @staticmethod
     def verify_step_up_authentication(user: models.Employee, code: str):

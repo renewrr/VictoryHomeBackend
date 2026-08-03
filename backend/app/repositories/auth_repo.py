@@ -32,6 +32,7 @@ def get_active_user(user_id: int) -> EmployeeCache:
         .where(models.Employee.deleted == False)
         .one()
     )
+    print(f"User auth version fetched: {user.auth.auth_version if user.auth else -1}", flush=True)
     auth_v = -1 if not user.auth else user.auth.auth_version
     perm_slugs = [perm.perm.perm_slug for perm in user.employee_perms]
     USERCACHE[user_id] = EmployeeCache(
@@ -55,7 +56,6 @@ class AuthRepository:
     @staticmethod
     def get_user_cache_data(user_id: int) -> EmployeeCache:
         return get_active_user(user_id)
-
 
     @staticmethod
     def get_user_by_credentials(account: str, password: str, totp: str | None):

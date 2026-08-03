@@ -23,6 +23,7 @@ def init_jwt_loaders(jwt: JWTManager):
         identity = jwt_payload["sub"]
         token_version = jwt_payload.get("version")
         employee = AuthRepository.get_user_cache_data(int(identity))
+        print(f'Token version: sent:{token_version}, db:{employee.auth_version}', flush=True)
         return token_version != employee.auth_version
 
     @jwt.expired_token_loader

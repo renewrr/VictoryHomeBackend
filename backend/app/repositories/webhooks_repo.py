@@ -3,6 +3,7 @@ from app.models import model_views, models_generated as models
 from app import schemas
 from typing import Tuple, Sequence
 import datetime
+import re
 
 
 from sqlalchemy import select, insert, delete, Integer, or_, text, func
@@ -24,7 +25,11 @@ class WebhookRepository:
         response_id: str, timestamp_str: str, answers: dict[str, str]
     ):
         timestamp = datetime.datetime.fromisoformat(timestamp_str)
-        employee_name = answers.get("交班者 Người giao ca ", "").strip("")
+        employee_name = (
+            answers.get("交班者 Người giao ca ", "").strip("").replace(" ", "")
+        )
+        employee_name = re.sub(r"\s+", "", employee_name)
+
         if not employee_name:
             return False
         try:
